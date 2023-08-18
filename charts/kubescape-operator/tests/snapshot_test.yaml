@@ -9,6 +9,7 @@ tests:
     set:
       account: 9e6c0c2c-6bd0-4919-815b-55030de7c9a0
       capabilities.relevancy: enable
+      configurations.server.url: "ens.euprod1.cyberarmorsoft.com"
       clusterName: kind-kind
       global:
         networkPolicy:

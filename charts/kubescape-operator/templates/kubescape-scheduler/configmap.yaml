@@ -1,6 +1,7 @@
-{{- if and .Values.kubescapeScheduler.enabled .Values.kubescape.enabled }}
-kind: ConfigMap 
-apiVersion: v1 
+{{- $config := fromYaml (include "components" .) }}
+{{- if $config.kubescapeScheduler.enabled }}
+kind: ConfigMap
+apiVersion: v1
 metadata:
   name: {{ .Values.kubescapeScheduler.name }}
   namespace: {{ .Values.ksNamespace }}

@@ -1,4 +1,5 @@
-{{- if .Values.kubevuln.enabled }}
+{{- $config := fromYaml (include "components" .) }}
+{{- if $config.kubevuln.enabled }}
 {{ template "account_guid" . }}
 {{ template "cluster_name" . }}
 {{- $no_proxy_envar_list := (include "no_proxy_envar_list" .) -}}

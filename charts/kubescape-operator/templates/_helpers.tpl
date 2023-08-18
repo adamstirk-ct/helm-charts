@@ -9,7 +9,7 @@
   {{- else -}}
     {{- print "" -}}
   {{- end }}
-{{- end }} 
+{{- end }}
 
 {{- define "account_guid" -}}
   {{- if .Values.kubescape.submit }}
@@ -29,24 +29,27 @@
   {{- end }}
 {{- end }}
 
-{{- define "check.provider" -}}
-  {{- $cloudProvider := include "cloud_provider" . -}}
-  {{- if or (eq $cloudProvider "eks") (eq $cloudProvider "gke") (eq $cloudProvider "aks") -}}
-    {{- print "true" -}}
-  {{- else -}}
-    {{- print "false" -}}
-  {{- end -}}
-{{- end -}}
-
-{{- define "relevancy.Enabled" -}}
-  {{- $isManaged := include "check.provider" . -}}
-  {{ if eq .Values.capabilities.relevancy "enable" -}}
-    {{- print "true" -}}
-  {{ else if eq .Values.capabilities.relevancy "disable" -}}
-    {{- print "false" -}}
-  {{- else if and (eq .Values.capabilities.relevancy "detect") (eq $isManaged "true") -}}
-    {{- print "true" -}}
-  {{- else -}}
-    {{- print "false" -}}
-  {{- end -}}
+{{- define "components" -}}
+gateway:
+  enabled: {{ not (empty .Values.configurations.server.url) }}
+hostScanner:
+  enabled: {{ eq .Values.capabilities.nodeScan "enable" }}
+kollector:
+  enabled: {{ not (empty .Values.configurations.server.url) }}
+kubescape:
+  enabled: {{ or (eq .Values.capabilities.configurationScan "enable") (eq .Values.capabilities.nodeScan "enable") }}
+kubescapeScheduler:
+  enabled: {{ and (not (empty .Values.configurations.server.url)) (or (eq .Values.capabilities.configurationScan "enable") (eq .Values.capabilities.nodeScan "enable")) }}
+kubevuln:
+  enabled: {{ or (eq .Values.capabilities.relevancy "enable") (eq .Values.capabilities.vulnerabilityScan "enable") }}
+kubevulnScheduler:
+  enabled: {{ and (not (empty .Values.configurations.server.url)) (or (eq .Values.capabilities.relevancy "enable") (eq .Values.capabilities.vulnerabilityScan "enable")) }}
+nodeAgent:
+  enabled: {{ or (eq .Values.capabilities.relevancy "enable") (eq .Values.capabilities.networkGenerator "enable") (eq .Values.capabilities.seccomp "enable") (eq .Values.capabilities.runtimeObservability "enable") }}
+operator:
+  enabled: true
+otelCollector:
+  enabled: {{ eq .Values.capabilities.otel "enable" }}
+storage:
+  enabled: true
 {{- end -}}

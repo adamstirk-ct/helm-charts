@@ -1,4 +1,5 @@
-{{- if .Values.kubevuln.enabled }}
+{{- $config := fromYaml (include "components" .) }}
+{{- if $config.kubevuln.enabled }}
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

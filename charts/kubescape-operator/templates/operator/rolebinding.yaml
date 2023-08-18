@@ -1,4 +1,5 @@
-{{- if .Values.operator.enabled }}
+{{- $config := fromYaml (include "components" .) }}
+{{- if $config.operator.enabled }}
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

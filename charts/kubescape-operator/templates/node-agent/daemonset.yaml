@@ -1,4 +1,5 @@
-{{- if and (eq (include "relevancy.Enabled" .) "true") .Values.storage.enabled }}
+{{- $config := fromYaml (include "components" .) }}
+{{- if $config.nodeAgent.enabled }}
 {{- $no_proxy_envar_list := (include "no_proxy_envar_list" .) -}}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -55,7 +56,7 @@ spec:
         {{- range .Values.nodeAgent.volumes }}
         - name: {{ .name }}
         {{- if .configMap }}
-          configMap: 
+          configMap:
             name: {{ .configMap.name }}
         {{ else if .emptyDir }}
           emptyDir: {}
@@ -64,7 +65,7 @@ spec:
             path: {{ .hostPath.path }}
             type: {{ .hostPath.type }}
         {{- end }}
-        {{- end }}       
+        {{- end }}
         {{- if ne .Values.global.proxySecretFile "" }}
         - name: proxy-secret
           secret:

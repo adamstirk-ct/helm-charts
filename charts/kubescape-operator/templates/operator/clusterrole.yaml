@@ -1,4 +1,5 @@
-{{- if .Values.operator.enabled }}
+{{- $config := fromYaml (include "components" .) }}
+{{- if $config.operator.enabled }}
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

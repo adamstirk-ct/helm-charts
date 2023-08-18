@@ -1,4 +1,5 @@
-{{- if .Values.storage.enabled }}
+{{- $config := fromYaml (include "components" .) }}
+{{- if $config.storage.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -70,7 +71,7 @@ spec:
     {{- end }}
       volumes:
         - name: "data"
-          {{- if .Values.persistence.enabled }}
+          {{- if eq .Values.configurations.persistence "enable" }}
           persistentVolumeClaim:
             claimName: {{ .Values.storage.name }}
           {{- else }}

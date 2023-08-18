@@ -1,4 +1,5 @@
-{{- if .Values.kubescape.enabled }}
+{{- $config := fromYaml (include "components" .) }}
+{{- if $config.kubescape.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
