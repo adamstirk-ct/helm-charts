@@ -10,4 +10,4 @@ data:
         "namespace": "{{ .Values.ksNamespace }}",
         "triggersecurityframework": "{{ .Values.operator.triggerSecurityFramework }}"
     }
-{{- end }}
+  {{- end }}
