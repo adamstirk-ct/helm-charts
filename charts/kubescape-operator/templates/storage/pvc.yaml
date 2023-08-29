@@ -1,5 +1,5 @@
-{{- $config := fromYaml (include "components" .) }}
-{{- if and $config.storage.enabled (eq .Values.configurations.persistence "enable") }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if and $components.storage.enabled (eq .Values.configurations.persistence "enable") }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

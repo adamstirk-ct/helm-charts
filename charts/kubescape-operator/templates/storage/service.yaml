@@ -1,5 +1,5 @@
-{{- $config := fromYaml (include "components" .) }}
-{{- if $config.storage.enabled }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if $components.storage.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

@@ -1,5 +1,5 @@
-{{- $config := fromYaml (include "components" .) }}
-{{- if $config.kubescapeScheduler.enabled }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if $components.kubescapeScheduler.enabled }}
 kind: ConfigMap
 apiVersion: v1
 metadata:

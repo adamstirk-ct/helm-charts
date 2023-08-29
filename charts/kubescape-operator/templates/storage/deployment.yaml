@@ -1,5 +1,5 @@
-{{- $config := fromYaml (include "components" .) }}
-{{- if $config.storage.enabled }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if $components.storage.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       labels:
-      {{- if .Values.otelCollector.enabled }}
+      {{- if $components.otelCollector.enabled }}
         otel: enabled
       {{- end }}
         {{ .Values.storage.labels | toYaml | nindent 8 }}

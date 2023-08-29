@@ -1,5 +1,5 @@
-{{- $config := fromYaml (include "components" .) }}
-{{- if $config.kubevuln.enabled }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if $components.kubevuln.enabled }}
 apiVersion: v1
 kind: Service
 metadata:

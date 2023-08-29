@@ -1,8 +1,6 @@
-{{- template "account_guid" . }}
-{{- template "cluster_name" . }}
-{{- $config := fromYaml (include "components" .)  }}
+{{- $components := fromYaml (include "components" .)  }}
 kind: ConfigMap
-apiVersion: v1 
+apiVersion: v1
 metadata:
   name: {{ .Values.global.cloudConfig }}
   namespace: {{ .Values.ksNamespace }}
@@ -13,7 +11,7 @@ metadata:
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-weight": "0"
-    "helm.sh/hook-delete-policy": before-hook-creation 
+    "helm.sh/hook-delete-policy": before-hook-creation
     "helm.sh/resource-policy": keep
   {{- end }}
 data:
@@ -31,13 +29,13 @@ data:
       "triggerNewImageScan": "{{ .Values.triggerNewImageScan }}",
       "accountID": "{{ .Values.account }}",
       "clusterName": "{{ regexReplaceAll "\\W+" .Values.clusterName "-" }}",
-      "storage": {{ $config.storage.enabled }},
-      "relevantImageVulnerabilitiesEnabled": {{ $config.kubevuln.enabled }},
+      "storage": {{ $components.storage.enabled }},
+      "relevantImageVulnerabilitiesEnabled": {{ $components.kubevuln.enabled }},
       "namespace": "{{ .Values.ksNamespace }}",
-      "imageVulnerabilitiesScanningEnabled": {{ $config.kubevuln.enabled }},
-      "postureScanEnabled": {{ $config.kubescape.enabled }},
-      "otelCollector": {{ .Values.otelCollector.enabled }},
-      "nodeAgent": "{{ $config.nodeAgent.enabled }}",
+      "imageVulnerabilitiesScanningEnabled": {{ $components.kubevuln.enabled }},
+      "postureScanEnabled": {{ $components.kubescape.enabled }},
+      "otelCollector": {{ $components.otelCollector.enabled }},
+      "nodeAgent": "{{ $components.nodeAgent.enabled }}",
       "maxImageSize": {{ .Values.kubevuln.config.maxImageSize }},
       "keepLocal": {{ .Values.global.keepLocal }},
       "scanTimeout": "{{ .Values.kubevuln.config.scanTimeout }}",

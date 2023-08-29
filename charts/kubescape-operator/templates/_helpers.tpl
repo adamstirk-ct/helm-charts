@@ -11,45 +11,41 @@
   {{- end }}
 {{- end }}
 
-{{- define "account_guid" -}}
-  {{- if .Values.kubescape.submit }}
-    {{- if .Values.account -}}
-    {{- else -}}
+{{- define "configurations" -}}
+{{- $submit := not (empty .Values.configurations.server.discoveryUrl) -}}
+submit: {{ $submit }}
+  {{- if $submit -}}
+    {{- if empty .Values.account -}}
       {{- fail "submitting is enabled but value for account is not defined: please register at https://cloud.armosec.io to get yours and re-run with  --set account=<your Guid>" }}
     {{- end -}}
-  {{- end }}
-{{- end }}
-
-{{- define "cluster_name" -}}
-  {{- if .Values.kubescape.submit }}
-    {{- if .Values.clusterName -}}
-    {{- else -}}
+    {{- if empty .Values.clusterName -}}
       {{- fail "value for clusterName is not defined: re-run with  --set clusterName=<your cluster name>" }}
     {{- end -}}
-  {{- end }}
-{{- end }}
+  {{- end -}}
+{{- end -}}
 
 {{- define "components" -}}
+{{- $configurations := fromYaml (include "configurations" .) }}
 gateway:
-  enabled: {{ not (empty .Values.configurations.server.url) }}
+  enabled: {{ $configurations.submit }}
 hostScanner:
   enabled: {{ eq .Values.capabilities.nodeScan "enable" }}
 kollector:
-  enabled: {{ not (empty .Values.configurations.server.url) }}
+  enabled: {{ $configurations.submit }}
 kubescape:
   enabled: {{ or (eq .Values.capabilities.configurationScan "enable") (eq .Values.capabilities.nodeScan "enable") }}
 kubescapeScheduler:
-  enabled: {{ and (not (empty .Values.configurations.server.url)) (or (eq .Values.capabilities.configurationScan "enable") (eq .Values.capabilities.nodeScan "enable")) }}
+  enabled: {{ and $configurations.submit (or (eq .Values.capabilities.configurationScan "enable") (eq .Values.capabilities.nodeScan "enable")) }}
 kubevuln:
   enabled: {{ or (eq .Values.capabilities.relevancy "enable") (eq .Values.capabilities.vulnerabilityScan "enable") }}
 kubevulnScheduler:
-  enabled: {{ and (not (empty .Values.configurations.server.url)) (or (eq .Values.capabilities.relevancy "enable") (eq .Values.capabilities.vulnerabilityScan "enable")) }}
+  enabled: {{ and $configurations.submit (or (eq .Values.capabilities.relevancy "enable") (eq .Values.capabilities.vulnerabilityScan "enable")) }}
 nodeAgent:
   enabled: {{ or (eq .Values.capabilities.relevancy "enable") (eq .Values.capabilities.networkGenerator "enable") (eq .Values.capabilities.seccomp "enable") (eq .Values.capabilities.runtimeObservability "enable") }}
 operator:
   enabled: true
 otelCollector:
-  enabled: {{ eq .Values.capabilities.otel "enable" }}
+  enabled: {{ not (empty .Values.configurations.server.otelUrl) }}
 storage:
   enabled: true
 {{- end -}}

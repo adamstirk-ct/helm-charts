@@ -15,7 +15,34 @@ matches the snapshot:
   2: |
     apiVersion: v1
     data:
-      clusterData: "{\n  \"gatewayWebsocketURL\": \"gateway:8001\",\n  \"gatewayRestURL\": \"gateway:8002\",\n  \"vulnScanURL\": \"kubevuln:8080\",\n  \"kubevulnURL\": \"kubevuln:8080\",\n  \"kubescapeURL\": \"kubescape:8080\",\n  \"triggerNewImageScan\": \"false\",\n  \"accountID\": \"9e6c0c2c-6bd0-4919-815b-55030de7c9a0\",\n  \"clusterName\": \"kind-kind\",\n  \"storage\": true,\n  \"relevantImageVulnerabilitiesEnabled\": true,\n  \"namespace\": \"kubescape\",\n  \"imageVulnerabilitiesScanningEnabled\": true,\n  \"postureScanEnabled\": true,\n  \"otelCollector\": true,\n  \"nodeAgent\": \"true\",\n  \"maxImageSize\": 5.36870912e+09,\n  \"keepLocal\": false,\n  \"scanTimeout\": \"5m\",\n  \"relevantImageVulnerabilitiesConfiguration\": \"enable\",\n  \"clusterProvider\": \"\",\n  \"listingURL\": \"http://grype-offline-db:80/listing.json\", \n  \"backendOpenAPI\": \"https://api.armosec.io/api\",\n  \"eventReceiverRestURL\": \"https://report.armo.cloud\",\n  \"eventReceiverWebsocketURL\": \"wss://report.armo.cloud\",\n  \"rootGatewayURL\": \"wss://ens.euprod1.cyberarmorsoft.com/v1/waitfornotification\"       \n}\n"
+      clusterData: |
+        {
+          "gatewayWebsocketURL": "gateway:8001",
+          "gatewayRestURL": "gateway:8002",
+          "vulnScanURL": "kubevuln:8080",
+          "kubevulnURL": "kubevuln:8080",
+          "kubescapeURL": "kubescape:8080",
+          "triggerNewImageScan": "false",
+          "accountID": "9e6c0c2c-6bd0-4919-815b-55030de7c9a0",
+          "clusterName": "kind-kind",
+          "storage": true,
+          "relevantImageVulnerabilitiesEnabled": true,
+          "namespace": "kubescape",
+          "imageVulnerabilitiesScanningEnabled": true,
+          "postureScanEnabled": true,
+          "otelCollector": true,
+          "nodeAgent": "true",
+          "maxImageSize": 5.36870912e+09,
+          "keepLocal": false,
+          "scanTimeout": "5m",
+          "relevantImageVulnerabilitiesConfiguration": "enable",
+          "clusterProvider": "",
+          "listingURL": "http://grype-offline-db:80/listing.json",
+          "backendOpenAPI": "https://api.armosec.io/api",
+          "eventReceiverRestURL": "https://report.armo.cloud",
+          "eventReceiverWebsocketURL": "wss://report.armo.cloud",
+          "rootGatewayURL": "wss://ens.euprod1.cyberarmorsoft.com/v1/waitfornotification"
+        }
     kind: ConfigMap
     metadata:
       labels:
@@ -28,21 +55,21 @@ matches the snapshot:
     data:
       capabilities: |
         {
-          "capabilities":{"configurationScan":"enable","continuousScan":"disable","networkGenerator":"disable","nodeScan":"enable","otel":"enable","relevancy":"enable","runtimeObservability":"disable","seccomp":"disable","vulnerabilityScan":"enable"},
+          "capabilities":{"configurationScan":"enable","continuousScan":"disable","nodeScan":"enable","relevancy":"enable","vulnerabilityScan":"enable"},
           "components":{"gateway":{"enabled":true},"hostScanner":{"enabled":true},"kollector":{"enabled":true},"kubescape":{"enabled":true},"kubescapeScheduler":{"enabled":true},"kubevuln":{"enabled":true},"kubevulnScheduler":{"enabled":true},"nodeAgent":{"enabled":true},"operator":{"enabled":true},"otelCollector":{"enabled":true},"storage":{"enabled":true}},
-          "configurations":{"persistence":"enable","server":{"account":null,"url":"ens.euprod1.cyberarmorsoft.com"}}
+          "configurations":{"persistence":"enable","server":{"account":null,"discoveryUrl":"ens.euprod1.cyberarmorsoft.com","otelUrl":"otelcol.armosec.io:443"}}
         }
     kind: ConfigMap
     metadata:
       labels:
-        app: ks-components
+        app: ks-capabilities
         tier: ks-control-plane
-      name: ks-components
+      name: ks-capabilities
       namespace: kubescape
   4: |
     apiVersion: v1
     data:
-      host-scanner-yaml: |2-
+      host-scanner-yaml: |-
         apiVersion: apps/v1
         kind: DaemonSet
         metadata:
@@ -156,7 +183,7 @@ matches the snapshot:
   7: |
     apiVersion: v1
     data:
-      otel-collector-config.yaml: |2-
+      otel-collector-config.yaml: |-
         # receivers configure how data gets into the Collector.
         receivers:
           otlp:
@@ -753,7 +780,7 @@ matches the snapshot:
                 - configMap:
                     name: kubescape-scheduler
                   name: kubescape-scheduler
-      schedule: 59 14 * * *
+      schedule: 31 20 * * *
   22: |
     apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRole
@@ -1269,7 +1296,7 @@ matches the snapshot:
                 - configMap:
                     name: kubevuln-scheduler
                   name: kubevuln-scheduler
-      schedule: 28 21 * * *
+      schedule: 12 17 * * *
   34: |
     apiVersion: apps/v1
     kind: Deployment
@@ -1845,7 +1872,7 @@ matches the snapshot:
                   value: zap
                 - name: OTEL_COLLECTOR_SVC
                   value: otel-collector:4317
-              image: quay.io/kubescape/operator:v0.1.42-prerelease
+              image: quay.io/kubescape/operator:v0.1.46-prerelease
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 httpGet:
@@ -1885,10 +1912,10 @@ matches the snapshot:
                   name: ks-cloud-config
                   readOnly: true
                   subPath: clusterData.json
-                - mountPath: /etc/config/components.json
-                  name: ks-components
+                - mountPath: /etc/config/capabilities.json
+                  name: ks-capabilities
                   readOnly: true
-                  subPath: components.json
+                  subPath: capabilities.json
                 - mountPath: /etc/config/config.json
                   name: config
                   readOnly: true
@@ -1914,10 +1941,10 @@ matches the snapshot:
               name: ks-cloud-config
             - configMap:
                 items:
-                  - key: components
-                    path: components.json
-                name: ks-components
-              name: ks-components
+                  - key: capabilities
+                    path: capabilities.json
+                name: ks-capabilities
+              name: ks-capabilities
             - configMap:
                 items:
                   - key: config.json

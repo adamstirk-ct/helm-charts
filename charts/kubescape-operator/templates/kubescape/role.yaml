@@ -1,5 +1,5 @@
-{{- $config := fromYaml (include "components" .) }}
-{{- if $config.kubescape.enabled }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if $components.kubescape.enabled }}
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:

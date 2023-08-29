@@ -1,8 +1,8 @@
 {{- if not (.Capabilities.APIVersions.Has "batch/v1/CronJob") }}
   {{- fail "`batch/v1/CronJob not supported`" }}
 {{- end }}
-{{- $config := fromYaml (include "components" .) }}
-{{- if $config.kubescapeScheduler.enabled }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if $components.kubescapeScheduler.enabled }}
 {{- $kubescape_daily_scan_cron_tab := (include "kubescape_daily_scan_cron_tab" .) -}}
 apiVersion: batch/v1
 kind: CronJob

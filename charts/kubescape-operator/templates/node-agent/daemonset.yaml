@@ -1,5 +1,5 @@
-{{- $config := fromYaml (include "components" .) }}
-{{- if $config.nodeAgent.enabled }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if $components.nodeAgent.enabled }}
 {{- $no_proxy_envar_list := (include "no_proxy_envar_list" .) -}}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -26,7 +26,7 @@ spec:
         helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
         app: {{ .Values.nodeAgent.name }}
         alt-name: {{ .Values.nodeAgent.name }} # Why?
-      {{- if .Values.otelCollector.enabled }}
+      {{- if $components.otelCollector.enabled }}
         otel: enabled
       {{- end }}
       {{- if .Values.global.addRevisionLabel }}
@@ -84,7 +84,7 @@ spec:
               value: "{{ .Values.logger.level }}"
             - name: KS_LOGGER_NAME
               value: "{{ .Values.logger.name }}"
-            {{- if .Values.otelCollector.enabled }}
+            {{- if $components.otelCollector.enabled }}
             - name: OTEL_COLLECTOR_SVC
               value: "otel-collector:4317"
             {{- end }}

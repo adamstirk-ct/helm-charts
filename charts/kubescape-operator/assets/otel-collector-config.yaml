@@ -1,4 +1,3 @@
-{{ template "cluster_name" . }}
 # receivers configure how data gets into the Collector.
 receivers:
   otlp:
@@ -55,7 +54,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: 
+      exporters:
       {{- if ne .Values.otelCollector.endpoint.host "" }}
         - otlp
       {{- end }}
@@ -64,7 +63,7 @@ service:
     metrics/2:
       receivers: [hostmetrics]
       processors: [attributes/ksCloud, batch]
-      exporters: 
+      exporters:
       {{- if ne .Values.otelCollector.endpoint.host "" }}
         - otlp
       {{- end }}
@@ -73,7 +72,7 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: 
+      exporters:
       {{- if ne .Values.otelCollector.endpoint.host "" }}
         - otlp
       {{- end }}
@@ -81,7 +80,7 @@ service:
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: 
+      exporters:
       {{- if ne .Values.otelCollector.endpoint.host "" }}
         - otlp
       {{- end }}

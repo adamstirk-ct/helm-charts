@@ -1,5 +1,5 @@
-{{- $config := fromYaml (include "components" .) }}
-{{- if $config.gateway.enabled }}
+{{- $components := fromYaml (include "components" .) }}
+{{- if $components.gateway.enabled }}
 {{- $no_proxy_envar_list := (include "no_proxy_envar_list" .) -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -87,7 +87,7 @@ spec:
               value: "{{ .Values.gateway.websocketService.port }}"
             - name: HTTP_PORT
               value: "{{ .Values.gateway.httpService.port }}"   
-            {{- if .Values.otelCollector.enabled }}
+            {{- if $components.otelCollector.enabled }}
             - name: ACCOUNT_ID
               value: "{{ .Values.account }}"
             - name: OTEL_COLLECTOR_SVC
