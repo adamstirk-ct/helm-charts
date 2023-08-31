@@ -132,7 +132,7 @@ spec:
             items:
             - key: "clusterData"
               path: "clusterData.json"
-            {{ if .Values.server }}
+            {{- if $components.serviceDiscovery.enabled }}
             - key: "services"
               path: "services.json"
             {{- end }}

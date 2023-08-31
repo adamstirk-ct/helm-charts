@@ -46,6 +46,8 @@ operator:
   enabled: true
 otelCollector:
   enabled: {{ not (empty .Values.configurations.server.otelUrl) }}
+serviceDiscovery:
+  enabled: {{ $configurations.submit }}
 storage:
   enabled: true
 {{- end -}}

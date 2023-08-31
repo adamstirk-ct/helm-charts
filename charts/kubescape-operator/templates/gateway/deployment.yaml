@@ -82,11 +82,11 @@ spec:
             - name: KS_LOGGER_LEVEL
               value: "{{ .Values.logger.level }}"
             - name: KS_LOGGER_NAME
-              value: "{{ .Values.logger.name }}" 
+              value: "{{ .Values.logger.name }}"
             - name: WEBSOCKET_PORT
               value: "{{ .Values.gateway.websocketService.port }}"
             - name: HTTP_PORT
-              value: "{{ .Values.gateway.httpService.port }}"   
+              value: "{{ .Values.gateway.httpService.port }}"
             {{- if $components.otelCollector.enabled }}
             - name: ACCOUNT_ID
               value: "{{ .Values.account }}"
@@ -134,7 +134,7 @@ spec:
             items:
             - key: "clusterData"
               path: "clusterData.json"
-            {{ if .Values.server }}
+            {{- if $components.serviceDiscovery.enabled }}
             - key: "services"
               path: "services.json"
             {{- end }}

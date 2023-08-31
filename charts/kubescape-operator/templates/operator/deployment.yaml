@@ -107,7 +107,7 @@ spec:
               mountPath: /etc/config/clusterData.json
               readOnly: true
               subPath: "clusterData.json"
-            {{- if .Values.server }}
+            {{- if $components.serviceDiscovery.enabled }}
             - name: {{ .Values.global.cloudConfig }}
               mountPath: /etc/config/services.json
               readOnly: true
@@ -146,7 +146,7 @@ spec:
             items:
             - key: "clusterData"
               path: "clusterData.json"
-            {{- if .Values.server }}
+            {{- if $components.serviceDiscovery.enabled }}
             - key: "services"
               path: "services.json"
             {{- end }}

@@ -7,7 +7,7 @@ metadata:
   labels:
     app: {{ .Values.global.cloudConfig }}
     tier: {{ .Values.global.namespaceTier }}
-  {{- if .Values.server  }}
+  {{- if $components.serviceDiscovery.enabled }}
   annotations:
     "helm.sh/hook": pre-install,pre-upgrade
     "helm.sh/hook-weight": "0"
@@ -15,7 +15,7 @@ metadata:
     "helm.sh/resource-policy": keep
   {{- end }}
 data:
-  {{- if .Values.server }}
+  {{- if $components.serviceDiscovery.enabled }}
   metrics: ""
   services: ""
   {{- end }}
@@ -40,8 +40,8 @@ data:
       "keepLocal": {{ .Values.global.keepLocal }},
       "scanTimeout": "{{ .Values.kubevuln.config.scanTimeout }}",
       "relevantImageVulnerabilitiesConfiguration": "{{ .Values.capabilities.relevancy }}",
-      {{- if .Values.grypeOfflineDB.enabled }}
+      "clusterProvider": "{{ include "cloud_provider" . }}",
+{{- if .Values.grypeOfflineDB.enabled }}
       "listingURL": "http://{{ .Values.grypeOfflineDB.name }}:80/listing.json",
-      {{- end }} 
-      "clusterProvider": "{{ include "cloud_provider" . }}"
+{{- end }}
     }

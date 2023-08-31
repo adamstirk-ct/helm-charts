@@ -38,13 +38,16 @@ matches the snapshot:
           "relevantImageVulnerabilitiesConfiguration": "enable",
           "clusterProvider": "",
           "listingURL": "http://grype-offline-db:80/listing.json",
-          "backendOpenAPI": "https://api.armosec.io/api",
-          "eventReceiverRestURL": "https://report.armo.cloud",
-          "eventReceiverWebsocketURL": "wss://report.armo.cloud",
-          "rootGatewayURL": "wss://ens.euprod1.cyberarmorsoft.com/v1/waitfornotification"
         }
+      metrics: ""
+      services: ""
     kind: ConfigMap
     metadata:
+      annotations:
+        helm.sh/hook: pre-install,pre-upgrade
+        helm.sh/hook-delete-policy: before-hook-creation
+        helm.sh/hook-weight: "0"
+        helm.sh/resource-policy: keep
       labels:
         app: ks-cloud-config
         tier: ks-control-plane
@@ -56,7 +59,7 @@ matches the snapshot:
       capabilities: |
         {
           "capabilities":{"configurationScan":"enable","continuousScan":"disable","nodeScan":"enable","relevancy":"enable","vulnerabilityScan":"enable"},
-          "components":{"gateway":{"enabled":true},"hostScanner":{"enabled":true},"kollector":{"enabled":true},"kubescape":{"enabled":true},"kubescapeScheduler":{"enabled":true},"kubevuln":{"enabled":true},"kubevulnScheduler":{"enabled":true},"nodeAgent":{"enabled":true},"operator":{"enabled":true},"otelCollector":{"enabled":true},"storage":{"enabled":true}},
+          "components":{"gateway":{"enabled":true},"hostScanner":{"enabled":true},"kollector":{"enabled":true},"kubescape":{"enabled":true},"kubescapeScheduler":{"enabled":true},"kubevuln":{"enabled":true},"kubevulnScheduler":{"enabled":true},"nodeAgent":{"enabled":true},"operator":{"enabled":true},"otelCollector":{"enabled":true},"serviceDiscovery":{"enabled":true},"storage":{"enabled":true}},
           "configurations":{"persistence":"enable","server":{"account":null,"discoveryUrl":"ens.euprod1.cyberarmorsoft.com","otelUrl":"otelcol.armosec.io:443"}}
         }
     kind: ConfigMap
@@ -183,7 +186,7 @@ matches the snapshot:
   7: |
     apiVersion: v1
     data:
-      otel-collector-config.yaml: |-
+      otel-collector-config.yaml: |2-
         # receivers configure how data gets into the Collector.
         receivers:
           otlp:
@@ -213,7 +216,7 @@ matches the snapshot:
         # exporters configure how to send processed data to one or more backends.
         exporters:
           otlp/ksCloud:
-            endpoint: "otelcol.armosec.io:443"
+            endpoint: ${env:CLOUD_OTEL_COLLECTOR_URL}
             tls:
               insecure: false
 
@@ -315,7 +318,7 @@ matches the snapshot:
                   value: 9e6c0c2c-6bd0-4919-815b-55030de7c9a0
                 - name: OTEL_COLLECTOR_SVC
                   value: otel-collector:4317
-              image: quay.io/kubescape/gateway:v0.1.14
+              image: quay.io/kubescape/gateway:v0.1.15-prerelease
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 httpGet:
@@ -369,6 +372,8 @@ matches the snapshot:
                 items:
                   - key: clusterData
                     path: clusterData.json
+                  - key: services
+                    path: services.json
                 name: ks-cloud-config
               name: ks-cloud-config
   10: |
@@ -661,7 +666,7 @@ matches the snapshot:
                   value: "false"
                 - name: WAIT_BEFORE_REPORT
                   value: "0"
-              image: quay.io/kubescape/kollector:v0.1.24
+              image: quay.io/kubescape/kollector:v0.1.27-prerelease
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 httpGet:
@@ -712,6 +717,8 @@ matches the snapshot:
                 items:
                   - key: clusterData
                     path: clusterData.json
+                  - key: services
+                    path: services.json
                 name: ks-cloud-config
               name: ks-cloud-config
   20: |
@@ -780,7 +787,7 @@ matches the snapshot:
                 - configMap:
                     name: kubescape-scheduler
                   name: kubescape-scheduler
-      schedule: 31 20 * * *
+      schedule: 10 23 * * *
   22: |
     apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRole
@@ -948,6 +955,15 @@ matches the snapshot:
           - namespaces
         verbs:
           - update
+      - apiGroups:
+          - spdx.softwarecomposition.kubescape.io
+        resources:
+          - workloadconfigurationscans
+          - workloadconfigurationscansummaries
+        verbs:
+          - create
+          - update
+          - patch
   23: |
     apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
@@ -967,13 +983,7 @@ matches the snapshot:
       config.json: |
         {
           "accountID": "9e6c0c2c-6bd0-4919-815b-55030de7c9a0",
-          "cloudReportURL": "",
-          "cloudAPIURL": "",
-          "cloudUIURL": "",
-          "cloudAuthURL": "",
-          "clusterName": "kind-kind",
-          "clientID": "",
-          "secretKey": ""
+          "clusterName": "kind-kind"
         }
     kind: ConfigMap
     metadata:
@@ -1053,13 +1063,11 @@ matches the snapshot:
                   value: /home/nonroot/.kubescape/host-scanner.yaml
                 - name: LARGE_CLUSTER_SIZE
                   value: "1500"
-                - name: KS_SAAS_ENV
-                  value: ""
                 - name: ACCOUNT_ID
                   value: 9e6c0c2c-6bd0-4919-815b-55030de7c9a0
                 - name: OTEL_COLLECTOR_SVC
                   value: otel-collector:4317
-              image: quay.io/kubescape/kubescape:v2.9.0
+              image: quay.io/kubescape/kubescape:v2.9.1-prerelease
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 httpGet:
@@ -1099,6 +1107,9 @@ matches the snapshot:
                   name: results
                 - mountPath: /home/nonroot/failed
                   name: failed
+                - mountPath: /etc/config
+                  name: ks-cloud-config
+                  readOnly: true
                 - mountPath: /etc/ssl/certs/proxy.crt
                   name: proxy-secret
                   subPath: proxy.crt
@@ -1110,6 +1121,12 @@ matches the snapshot:
             - configMap:
                 name: kubescape-config
               name: kubescape-config-volume
+            - configMap:
+                items:
+                  - key: services
+                    path: services.json
+                name: ks-cloud-config
+              name: ks-cloud-config
             - configMap:
                 name: host-scanner-definition
               name: host-scanner-definition
@@ -1296,7 +1313,7 @@ matches the snapshot:
                 - configMap:
                     name: kubevuln-scheduler
                   name: kubevuln-scheduler
-      schedule: 12 17 * * *
+      schedule: 4 7 * * *
   34: |
     apiVersion: apps/v1
     kind: Deployment
@@ -1350,7 +1367,7 @@ matches the snapshot:
                   value: 9e6c0c2c-6bd0-4919-815b-55030de7c9a0
                 - name: OTEL_COLLECTOR_SVC
                   value: otel-collector:4317
-              image: quay.io/kubescape/kubevuln:v0.2.104
+              image: quay.io/kubescape/kubevuln:v0.2.112-prerelease
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 httpGet:
@@ -1408,6 +1425,8 @@ matches the snapshot:
                 items:
                   - key: clusterData
                     path: clusterData.json
+                  - key: services
+                    path: services.json
                 name: ks-cloud-config
               name: ks-cloud-config
             - emptyDir: {}
@@ -1446,18 +1465,17 @@ matches the snapshot:
         - Egress
   36: |
     apiVersion: rbac.authorization.k8s.io/v1
-    kind: Role
+    kind: ClusterRole
     metadata:
       name: kubevuln
-      namespace: kubescape
     rules:
       - apiGroups:
           - spdx.softwarecomposition.kubescape.io
         resources:
-          - sbomspdxv2p3s
           - vulnerabilitymanifests
-          - sbomsummaries
           - vulnerabilitymanifestsummaries
+          - sbomsummaries
+          - sbomspdxv2p3s
         verbs:
           - create
           - get
@@ -1478,10 +1496,9 @@ matches the snapshot:
     kind: RoleBinding
     metadata:
       name: kubevuln
-      namespace: kubescape
     roleRef:
       apiGroup: rbac.authorization.k8s.io
-      kind: Role
+      kind: ClusterRole
       name: kubevuln
     subjects:
       - kind: ServiceAccount
@@ -1555,6 +1572,26 @@ matches the snapshot:
           - get
           - watch
           - list
+      - apiGroups:
+          - spdx.softwarecomposition.kubescape.io
+        resources:
+          - sbomspdxv2p3s
+          - sbomsummaries
+        verbs:
+          - get
+          - watch
+          - list
+      - apiGroups:
+          - spdx.softwarecomposition.kubescape.io
+        resources:
+          - sbomspdxv2p3filtereds
+        verbs:
+          - create
+          - get
+          - update
+          - watch
+          - list
+          - patch
   41: |
     apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRoleBinding
@@ -1684,6 +1721,8 @@ matches the snapshot:
                 items:
                   - key: clusterData
                     path: clusterData.json
+                  - key: services
+                    path: services.json
                 name: ks-cloud-config
               name: ks-cloud-config
             - configMap:
@@ -1792,6 +1831,8 @@ matches the snapshot:
           - vulnerabilitymanifests
           - sbomsummaries
           - vulnerabilitymanifestsummaries
+          - workloadconfigurationscans
+          - workloadconfigurationscansummaries
         verbs:
           - get
           - watch
@@ -1912,6 +1953,10 @@ matches the snapshot:
                   name: ks-cloud-config
                   readOnly: true
                   subPath: clusterData.json
+                - mountPath: /etc/config/services.json
+                  name: ks-cloud-config
+                  readOnly: true
+                  subPath: services.json
                 - mountPath: /etc/config/capabilities.json
                   name: ks-capabilities
                   readOnly: true
@@ -1937,6 +1982,8 @@ matches the snapshot:
                 items:
                   - key: clusterData
                     path: clusterData.json
+                  - key: services
+                    path: services.json
                 name: ks-cloud-config
               name: ks-cloud-config
             - configMap:
@@ -2102,6 +2149,11 @@ matches the snapshot:
                 - /otelcol
                 - --config=/conf/otel-collector-config.yaml
               env:
+                - name: CLOUD_OTEL_COLLECTOR_URL
+                  valueFrom:
+                    configMapKeyRef:
+                      key: metrics
+                      name: ks-cloud-config
                 - name: GOMEMLIMIT
                   value: 500MiB
                 - name: GOGC
@@ -2345,6 +2397,8 @@ matches the snapshot:
                 items:
                   - key: clusterData
                     path: clusterData.json
+                  - key: services
+                    path: services.json
                 name: ks-cloud-config
               name: ks-cloud-config
   65: |

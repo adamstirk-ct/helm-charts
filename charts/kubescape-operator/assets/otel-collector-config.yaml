@@ -1,3 +1,4 @@
+{{- $components := fromYaml (include "components" .) }}
 # receivers configure how data gets into the Collector.
 receivers:
   otlp:
@@ -27,7 +28,7 @@ processors:
 # exporters configure how to send processed data to one or more backends.
 exporters:
   otlp/ksCloud:
-    {{- if .Values.server }}
+    {{- if $components.serviceDiscovery.enabled }}
     endpoint: ${env:CLOUD_OTEL_COLLECTOR_URL}
     {{- else }}
     endpoint: ""

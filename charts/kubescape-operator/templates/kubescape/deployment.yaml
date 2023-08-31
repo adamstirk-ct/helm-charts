@@ -155,7 +155,7 @@ spec:
           mountPath: /home/nonroot/results
         - name: failed
           mountPath: /home/nonroot/failed
-        {{- if .Values.server }}
+        {{- if $components.serviceDiscovery.enabled }}
         - name: {{ .Values.global.cloudConfig }}
           mountPath: /etc/config
           readOnly: true
@@ -180,7 +180,7 @@ spec:
       - name: kubescape-config-volume
         configMap:
           name: {{ .Values.kubescape.name }}-config
-      {{- if .Values.server }}
+      {{- if $components.serviceDiscovery.enabled }}
       - name: {{ .Values.global.cloudConfig }}
         configMap: 
           name: {{ .Values.global.cloudConfig }}
